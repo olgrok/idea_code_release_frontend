@@ -35,6 +35,7 @@ const authenticate = handleSubmit((values) => {
     }).then((response) => {
       console.log(response);
       AddCookie("msu_book_token", response.data.token);
+      console.log("success");
       emit('onLoginTrigger');
     }).catch((error) => {
       const error_message = {

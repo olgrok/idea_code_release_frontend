@@ -19,7 +19,8 @@ watch(link, (new_link) => {
   router.push(new_link);
 })
 
-const HandleLoginTrigger = () => {
+function onLoginTrigger() {
+  console.log("oush");
   isRegistered.value = true;
   router.push('booking');
 }
@@ -44,7 +45,7 @@ const HandleLoginTrigger = () => {
 
     <v-main>
       <RouterView v-slot="{ Component }">
-        <component :is="Component" @on_login_trigger="HandleLoginTrigger" />
+        <component :is="Component" @onLoginTrigger="onLoginTrigger" />
       </RouterView>
     </v-main>
 
