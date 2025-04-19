@@ -13,15 +13,14 @@ const page_title: Map<string, string> = new Map([
 ])
 
 const router = useRouter();
+const isRegistered = ref(false);
 
 watch(link, (new_link) => {
   router.push(new_link);
 })
 
-const registered = ref(false);
-
 const HandleLoginTrigger = () => {
-  registered.value = true;
+  isRegistered.value = true;
   router.push('booking');
 }
 
@@ -35,7 +34,7 @@ const HandleLoginTrigger = () => {
           {{ page_title.get(link) }}
         </v-app-bar-title>
 
-        <template v-slot:append v-if="registered">
+        <template v-slot:append v-if="isRegistered">
           <v-btn v-on:click="link = 'account'">
             <v-icon icon="mdi-account-circle" size=30></v-icon>
           </v-btn>
@@ -62,7 +61,7 @@ const HandleLoginTrigger = () => {
             <span>Бронирование аудитории</span>
           </v-btn>
 
-          <v-btn value="login" v-if="!registered">
+          <v-btn value="login" v-if="!isRegistered">
             <v-icon icon="mdi-account-circle" size="small"></v-icon>
             <span>Авторизация</span>
           </v-btn>

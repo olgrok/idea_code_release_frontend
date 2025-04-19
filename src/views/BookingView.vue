@@ -125,13 +125,8 @@ function findAvailable() {
   <v-container>
     <v-row>
       <v-col class="mt-10">
-        <v-btn
-          v-for="slot in TimeSlots"
-          :key="slot.number"
-          :color="slot.is_active ? 'success' : 'default'"
-          class="ma-1"
-          @click="selectSlot(slot)"
-        >
+        <v-btn v-for="slot in TimeSlots" :key="slot.number" :color="slot.is_active ? 'success' : 'default'" class="ma-1"
+          @click="selectSlot(slot)">
           {{ slot.time_slot }}
         </v-btn>
       </v-col>
@@ -139,14 +134,10 @@ function findAvailable() {
 
     <v-row>
       <v-col class="pa-5">
-        <v-select
-          v-model="selected_floor"
-          :items="floorOptions"
-          label="Этаж"
-        ></v-select>
+        <v-select v-model="selected_floor" :items="floorOptions" label="Этаж"></v-select>
       </v-col>
       <v-col class="col_container">
-        <v-btn @click="findAvailable" class="ml-5 ma-5">Применить</v-btn>
+        <v-btn @click="findAvailable" class="ml-5 ma-5" color="primary">Применить</v-btn>
       </v-col>
     </v-row>
 
