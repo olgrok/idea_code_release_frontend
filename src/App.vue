@@ -20,7 +20,6 @@ watch(link, (new_link) => {
 })
 
 function onLoginTrigger() {
-  console.log("oush");
   isRegistered.value = true;
   router.push('booking');
 }
