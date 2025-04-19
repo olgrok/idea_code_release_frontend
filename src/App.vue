@@ -1,85 +1,76 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router';
+import { useRouter } from 'vue-router'
+import { ref, watch } from 'vue';
+
+const link = ref("booking")
+
+const page_title: Map<string, string> = new Map([
+  ['notifications', 'Уведомления'],
+  ['booking', "Бронирование аудитории"],
+  ['account', "Профиль"],
+  ['login', 'Авторизация']
+])
+
+
+const router = useRouter();
+
+watch(link, (new_link) => {
+  router.push(new_link);
+})
+
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <v-app>
+    <header>
+      <v-app-bar :elevation="1" class="app_bar_container">
+        <v-app-bar-title style="font-size: 1.5rem;">
+          {{ page_title.get(link) }}
+        </v-app-bar-title>
+      </v-app-bar>
+    </header>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+    <v-main>
+      <RouterView />
+    </v-main>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
+    <footer>
+      <v-layout class="overflow-visible" style="height: 56px;">
+        <v-bottom-navigation v-model="link" class="bottom_nav_container">
+          <v-btn value="notifications">
+            <span>Уведомления</span>
+          </v-btn>
 
-  <RouterView />
+          <v-btn value="booking">
+            <span>Бронирование аудитории</span>
+          </v-btn>
+
+          <v-btn value="account">
+            <span>Профиль</span>
+          </v-btn>
+
+          <v-btn value="login">
+            <span>Авторизация</span>
+          </v-btn>
+        </v-bottom-navigation>
+      </v-layout>
+    </footer>
+  </v-app>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+.app_bar_container {
+  background-color: #00014c;
+  color: #fff;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.bottom_nav_container {
+  background-color: #00014c;
+  color: #fff;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.bottom_nav_container span {
+  font-size: 1rem;
 }
 </style>
