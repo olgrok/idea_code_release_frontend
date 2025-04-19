@@ -22,6 +22,7 @@ const registered = ref(false);
 
 const HandleLoginTrigger = () => {
   registered.value = true;
+  router.push('booking');
 }
 
 </script>
@@ -30,7 +31,7 @@ const HandleLoginTrigger = () => {
   <v-app>
     <header>
       <v-app-bar :elevation="1" class="app_bar_container">
-        <v-app-bar-title style="font-size: 1.5rem;">
+        <v-app-bar-title>
           {{ page_title.get(link) }}
         </v-app-bar-title>
 
@@ -52,7 +53,7 @@ const HandleLoginTrigger = () => {
       <v-layout class="overflow-visible" style="height: 56px;">
         <v-bottom-navigation v-model="link" class="bottom_nav_container">
           <v-btn value="notifications">
-            <v-icon icon="mdi-account-circle" size="small"></v-icon>
+            <v-icon icon="mdi-bell-outline" size="small"></v-icon>
             <span>Уведомления</span>
           </v-btn>
 
@@ -72,6 +73,10 @@ const HandleLoginTrigger = () => {
 </template>
 
 <style scoped>
+body {
+  font-family: Roboto;
+}
+
 .app_bar_container {
   background-color: #00014c;
   color: #fff;
@@ -80,9 +85,5 @@ const HandleLoginTrigger = () => {
 .bottom_nav_container {
   background-color: #00014c;
   color: #fff;
-}
-
-.bottom_nav_container span {
-  font-size: 1rem;
 }
 </style>
