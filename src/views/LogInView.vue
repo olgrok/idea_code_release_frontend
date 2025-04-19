@@ -1,13 +1,18 @@
 <script setup lang="ts">
+import axios from 'axios';
 import { ref } from 'vue';
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
+import * as api from '../api_config.json';
+import * as parser from '../scripts/cookie_parser';
+
+const emit = defineEmits(['on_login_trigger'])
 
 const show = ref(false)
 
 const schema = yup.object({
-  email: yup.string().email().required(),
-  password: yup.string().min(8).required(),
+  email: yup.string().email('must be a valid email').required(),
+  password: yup.string().required(),
 });
 
 const { handleSubmit } = useForm({
@@ -18,7 +23,28 @@ const email = useField('email');
 const password = useField('password');
 
 const authenticate_submit = handleSubmit(values => {
-  console.log(values);
+  const url = api.host + '/auth/login/';
+
+  const data = {
+    "username": values.email,
+    "password": values.password
+  }
+
+  const params = {
+    timeout: api.timeout,
+  }
+
+  axios.post(url, data, params).then((response) => {
+    console.log(response);
+    parser.AddCookie("msu_book_token", response.data.token);
+    emit('on_login_trigger');
+  }).catch((error) => {
+    const error_message = {
+      "message": error.message,
+      "status": error.status
+    }
+    console.log(error_message);
+  })
 })
 
 </script>
@@ -35,9 +61,8 @@ const authenticate_submit = handleSubmit(values => {
                 label="e-mail"></v-text-field>
 
               <v-text-field class="mt-2" v-model="password.value.value" :error-messages="password.errorMessage.value"
-                :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'" :type="show ? 'text' : 'password'"
-                hint="At least 8 characters" label="пароль" name="input-10-1"
-                @click:append="show = !show"></v-text-field>
+                :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'" :type="show ? 'text' : 'password'" hint=""
+                label="пароль" name="input-10-1" @click:append="show = !show"></v-text-field>
 
               <v-btn class="ma-2 button" type="submit" color="#00014c"> Авторизация </v-btn>
             </form>

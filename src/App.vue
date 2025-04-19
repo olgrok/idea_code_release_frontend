@@ -12,12 +12,17 @@ const page_title: Map<string, string> = new Map([
   ['login', 'Авторизация']
 ])
 
-
 const router = useRouter();
 
 watch(link, (new_link) => {
   router.push(new_link);
 })
+
+const registered = ref(false);
+
+const HandleLoginTrigger = () => {
+  registered.value = true;
+}
 
 </script>
 
@@ -28,29 +33,36 @@ watch(link, (new_link) => {
         <v-app-bar-title style="font-size: 1.5rem;">
           {{ page_title.get(link) }}
         </v-app-bar-title>
+
+        <template v-slot:append v-if="registered">
+          <v-btn v-on:click="link = 'account'">
+            <v-icon icon="mdi-account-circle" size=30></v-icon>
+          </v-btn>
+        </template>
       </v-app-bar>
     </header>
 
     <v-main>
-      <RouterView />
+      <RouterView v-slot="{ Component }">
+        <component :is="Component" @on_login_trigger="HandleLoginTrigger" />
+      </RouterView>
     </v-main>
 
     <footer>
       <v-layout class="overflow-visible" style="height: 56px;">
         <v-bottom-navigation v-model="link" class="bottom_nav_container">
           <v-btn value="notifications">
+            <v-icon icon="mdi-account-circle" size="small"></v-icon>
             <span>Уведомления</span>
           </v-btn>
 
           <v-btn value="booking">
+            <v-icon icon="mdi-timetable" size="small"></v-icon>
             <span>Бронирование аудитории</span>
           </v-btn>
 
-          <v-btn value="account">
-            <span>Профиль</span>
-          </v-btn>
-
-          <v-btn value="login">
+          <v-btn value="login" v-if="!registered">
+            <v-icon icon="mdi-account-circle" size="small"></v-icon>
             <span>Авторизация</span>
           </v-btn>
         </v-bottom-navigation>
