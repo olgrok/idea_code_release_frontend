@@ -243,6 +243,7 @@ async function BookingAttempt(room: Room, bid: number): Promise<void> {
     timeout: api.timeout,
   }).then(() => {
     room.range_status = "IN_AUCTION";
+    book_room_dialog.value = false;
   }).catch((error) => {
     error_dialog.value = true;
     if (error.status === 403) {
@@ -354,7 +355,7 @@ function Redirect() {
           <v-chip v-if="room.range_status === 'AVAILABLE'" color="green" variant="flat">
             Доступна для брони
           </v-chip>
-          <v-chip v-if="room.range_status === 'IN_AUCTION'" color="warnibg" variant="flat">
+          <v-chip v-if="room.range_status === 'IN_AUCTION'" color="warning" variant="flat">
             На аукционе
           </v-chip>
           <v-chip v-if="room.range_status === 'BOOKED'" color="red" variant="flat">

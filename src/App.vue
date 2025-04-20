@@ -32,7 +32,7 @@ function LogOut() {
 }
 
 onMounted(() => {
-  if (parser.GetCookie('msu_book_token') != undefined) {
+  if (parser.GetCookie('msu_book_token') != undefined && parser.GetCookie('msu_book_token') != "") {
     isRegistered.value = true;
   }
 })
