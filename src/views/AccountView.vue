@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useDisplay } from 'vuetify';
 import api from '../api_config.json';
 import * as parser from '../scripts/cookie_parser';
+import axios from 'axios';
 
 const { mobile } = useDisplay();
 
