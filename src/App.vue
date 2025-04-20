@@ -1,24 +1,25 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router';
-import { useRouter } from 'vue-router'
+import { RouterView, useRouter, useRoute } from 'vue-router';
 import { ref, onMounted } from 'vue';
 import * as parser from './scripts/cookie_parser'
 
-const link = ref("booking")
+const link = ref("booking");
 
 const page_title: Map<string, string> = new Map([
   ['notifications', 'Уведомления'],
   ['booking', "Бронирование аудитории"],
+  ['events', "События"], // Added Events
   ['account', "Профиль"],
   ['login', 'Авторизация']
-])
+]);
 
 const router = useRouter();
+const route = useRoute();
 const isRegistered = ref(false);
 
 function onLoginTrigger() {
   isRegistered.value = true;
-  router.push('booking');
+  router.push('events'); // Redirect to events after login
 }
 
 function Redirect(link_: string) {
@@ -28,12 +29,18 @@ function Redirect(link_: string) {
 
 function LogOut() {
   isRegistered.value = false;
-  parser.SetCookie('msu_book_token', '')
+  parser.SetCookie('msu_book_token', '');
+  router.push('login'); //Redirect to login after logout
 }
 
 onMounted(() => {
   if (parser.GetCookie('msu_book_token') != undefined && parser.GetCookie('msu_book_token') != "") {
     isRegistered.value = true;
+    //Redirect user to events page if already logged in
+    if (route.path === '/') {
+        router.push('/events');
+    }
+
   }
 })
 
@@ -72,9 +79,14 @@ onMounted(() => {
             <span>Уведомления</span>
           </v-btn> -->
 
-          <v-btn @click="Redirect('booking')">
+          <v-btn @click="Redirect('booking')" v-if="isRegistered">
             <v-icon icon="mdi-timetable" size="small"></v-icon>
             <span>Бронирование аудитории</span>
+          </v-btn>
+
+          <v-btn @click="Redirect('events')" v-if="isRegistered">
+            <v-icon icon="mdi-calendar" size="small"></v-icon>
+            <span>События</span>
           </v-btn>
 
           <v-btn @click="Redirect('login')" v-if="!isRegistered">

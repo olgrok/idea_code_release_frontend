@@ -248,7 +248,7 @@ async function BookingAttempt(room: Room, bid: number): Promise<void> {
       error_msg.value = "Авторизируйтесть, чтобы забронировать аудиторию."
     } else {
       console.log(error);
-      error_msg.value = error.statys + error.message;
+      error_msg.value = error.status + error.message+error.response.data;
     }
     console.log(error);
   });
@@ -312,7 +312,7 @@ function Redirect() {
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="success" variant="flat" @click="BookingAttempt(selected_room, selected_slots_number)">
+          <v-btn color="success" variant="flat" @click="BookingAttempt(selected_room, selected_room.bid)">
             Подвердить
           </v-btn>
           <v-spacer></v-spacer>

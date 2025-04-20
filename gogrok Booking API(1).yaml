@@ -1,0 +1,1193 @@
+openapi: 3.0.3
+info:
+  title: gogrok Booking API
+  version: 1.0.0
+  description: Бронь аудиторий в МГУ
+paths:
+  /api/groups/:
+    get:
+      operationId: api_groups_list
+      description: |-
+        API endpoint for managing Booking Groups.
+        Includes actions for initiator to add/remove members,
+        and for members to leave the group.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBookingGroupList'
+          description: ''
+    post:
+      operationId: api_groups_create
+      description: |-
+        API endpoint for managing Booking Groups.
+        Includes actions for initiator to add/remove members,
+        and for members to leave the group.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingGroup'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingGroup'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingGroup'
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingGroup'
+          description: ''
+  /api/groups/{group_pk}/contributions/add/:
+    post:
+      operationId: api_groups_contributions_add_create
+      description: Add points from user's balance to the group
+      parameters:
+      - in: path
+        name: group_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupContribution'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GroupContribution'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupContribution'
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupContribution'
+          description: ''
+  /api/groups/{group_pk}/contributions/list/:
+    get:
+      operationId: api_groups_contributions_list_retrieve
+      description: List all contributions for the group
+      parameters:
+      - in: path
+        name: group_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupContribution'
+          description: ''
+  /api/groups/{group_pk}/contributions/my-contribution/:
+    get:
+      operationId: api_groups_contributions_my_contribution_retrieve
+      description: Get the current user's contribution to the group
+      parameters:
+      - in: path
+        name: group_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupContribution'
+          description: ''
+  /api/groups/{group_pk}/contributions/withdraw/:
+    post:
+      operationId: api_groups_contributions_withdraw_create
+      description: Withdraw points from the group back to user's balance
+      parameters:
+      - in: path
+        name: group_pk
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupContribution'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GroupContribution'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupContribution'
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupContribution'
+          description: ''
+  /api/groups/{id}/:
+    get:
+      operationId: api_groups_retrieve
+      description: |-
+        API endpoint for managing Booking Groups.
+        Includes actions for initiator to add/remove members,
+        and for members to leave the group.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingGroup'
+          description: ''
+    delete:
+      operationId: api_groups_destroy
+      description: |-
+        API endpoint for managing Booking Groups.
+        Includes actions for initiator to add/remove members,
+        and for members to leave the group.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '204':
+          description: No response body
+  /api/groups/{id}/add-member/:
+    post:
+      operationId: api_groups_add_member_create
+      description: Adds a user to the group (Initiator only).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberAction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MemberAction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MemberAction'
+        required: true
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          description: No response body
+  /api/groups/{id}/leave/:
+    post:
+      operationId: api_groups_leave_create
+      description: Allows a group member (non-initiator) to leave the group.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          description: No response body
+  /api/groups/{id}/remove-member/:
+    post:
+      operationId: api_groups_remove_member_create
+      description: |-
+        Removes a specified user from the group (Initiator only).
+        Returns the removed user's contribution back to their balance.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberAction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MemberAction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MemberAction'
+        required: true
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          description: No response body
+  /api/schema/:
+    get:
+      operationId: api_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - ThirdPartyAuthentication: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /auth/login/:
+    post:
+      operationId: auth_login_create
+      description: View для обмена логина и пароля на токен и авторизацию пользователя.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThirdPartyAuth'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ThirdPartyAuth'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ThirdPartyAuth'
+        required: true
+      security:
+      - ThirdPartyAuthentication: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: Ошибка при запросе.
+  /auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      tags:
+      - auth
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /booking/booking-attempt-create/:
+    post:
+      operationId: booking_booking_attempt_create_create
+      description: Создает индивидуальную или групповую заявку. Обрабатывает мгновенное
+        бронирование (< 1 часа до слота) или инициирует аукцион. Проверяет доступность,
+        баланс/заморозку, права.
+      summary: Создание/обработка заявки на бронирование
+      tags:
+      - booking
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingAttemptCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BookingAttemptCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BookingAttemptCreate'
+        required: true
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingAttemptDetail'
+          description: Заявка успешно создана (аукцион или мгновенная бронь).
+        '400':
+          description: Ошибка валидации данных.
+        '403':
+          description: Ошибка прав доступа.
+        '404':
+          description: Объект не найден.
+        '409':
+          description: Конфликт (слоты заняты, группа заблокирована).
+        '500':
+          description: Внутренняя ошибка сервера.
+  /booking/find/:
+    get:
+      operationId: booking_find_retrieve
+      description: Находит аудитории на указанном этаже (или всех) и возвращает их
+        статус ('AVAILABLE', 'IN_AUCTION', 'BOOKED', 'UNAVAILABLE_SLOT', 'INACTIVE')
+        в заданный диапазон времени.
+      summary: Поиск аудиторий с детальным статусом
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+        description: Дата поиска (YYYY-MM-DD)
+        required: true
+      - in: query
+        name: end_slot
+        schema:
+          type: integer
+        description: Конечный номер слота (1-14)
+        required: true
+      - in: query
+        name: floor
+        schema:
+          type: integer
+        description: Номер этажа (['ц', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+          '10', '11', '12', '13', '14', '15']). Если не указан, поиск по всем.
+      - in: query
+        name: start_slot
+        schema:
+          type: integer
+        description: Начальный номер слота (1-14)
+        required: true
+      tags:
+      - booking
+      security:
+      - ThirdPartyAuthentication: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomAvailability'
+          description: Список аудиторий с их статусом в заданном диапазоне.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: Ошибка валидации параметров.
+        '401':
+          description: Требуется аутентификация.
+  /events/create/:
+    post:
+      operationId: events_create_create
+      tags:
+      - events
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Event'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Event'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Event'
+        required: true
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /events/list/:
+    get:
+      operationId: events_list_list
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: initiator
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - events
+      security:
+      - ThirdPartyAuthentication: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEventList'
+          description: ''
+  /events/subjects/:
+    get:
+      operationId: events_subjects_retrieve
+      description: Returns a list of distinct event subjects.
+      tags:
+      - events
+      security:
+      - ThirdPartyAuthentication: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /import-rooms/:
+    get:
+      operationId: import_rooms_retrieve
+      tags:
+      - import-rooms
+      security:
+      - ThirdPartyAuthentication: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /import-timetable/:
+    get:
+      operationId: import_timetable_retrieve
+      tags:
+      - import-timetable
+      security:
+      - ThirdPartyAuthentication: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /profile/:
+    get:
+      operationId: profile_retrieve
+      tags:
+      - profile
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          description: No response body
+    post:
+      operationId: profile_create
+      tags:
+      - profile
+      security:
+      - ThirdPartyAuthentication: []
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    BookingAttemptCreate:
+      type: object
+      description: Сериализатор для валидации данных при создании заявки на бронирование.
+      properties:
+        room:
+          type: integer
+        date:
+          type: string
+          format: date
+        start_slot_number:
+          $ref: '#/components/schemas/StartSlotNumberEnum'
+        end_slot_number:
+          $ref: '#/components/schemas/EndSlotNumberEnum'
+        total_bid:
+          type: integer
+          minimum: 1
+          nullable: true
+        funding_group:
+          type: integer
+          nullable: true
+      required:
+      - date
+      - end_slot_number
+      - room
+      - start_slot_number
+    BookingAttemptDetail:
+      type: object
+      description: Сериализатор для отображения деталей заявки.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        initiator:
+          type: string
+          readOnly: true
+        room:
+          type: string
+          readOnly: true
+        start_slot:
+          type: string
+          readOnly: true
+        end_slot:
+          type: string
+          readOnly: true
+        total_bid:
+          type: integer
+          readOnly: true
+        funding_group:
+          type: string
+          readOnly: true
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - end_slot
+      - funding_group
+      - id
+      - initiator
+      - room
+      - start_slot
+      - status
+      - total_bid
+      - updated_at
+    BookingGroup:
+      type: object
+      description: Сериализатор для групп бронирования
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        initiator:
+          allOf:
+          - $ref: '#/components/schemas/GroupMember'
+          readOnly: true
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMember'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        current_balance:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - current_balance
+      - id
+      - initiator
+      - members
+    EndSlotEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      type: integer
+      description: |-
+        * `1` - Слот 1 (09:00 - 09:45)
+        * `2` - Слот 2 (09:50 - 10:35)
+        * `3` - Слот 3 (10:50 - 11:35)
+        * `4` - Слот 4 (11:40 - 12:25)
+        * `5` - Слот 5 (13:30 - 14:15)
+        * `6` - Слот 6 (14:20 - 15:05)
+        * `7` - Слот 7 (15:20 - 16:05)
+        * `8` - Слот 8 (16:10 - 16:55)
+        * `9` - Слот 9 (17:05 - 17:50)
+        * `10` - Слот 10 (17:55 - 18:40)
+        * `11` - Слот 11 (18:55 - 19:40)
+        * `12` - Слот 12 (19:45 - 20:30)
+        * `13` - Слот 13 (20:45 - 21:30)
+        * `14` - Слот 14 (21:35 - 22:00)
+    EndSlotNumberEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      type: integer
+      description: |-
+        * `1` - Слот 1 (09:00 - 09:45)
+        * `2` - Слот 2 (09:50 - 10:35)
+        * `3` - Слот 3 (10:50 - 11:35)
+        * `4` - Слот 4 (11:40 - 12:25)
+        * `5` - Слот 5 (13:30 - 14:15)
+        * `6` - Слот 6 (14:20 - 15:05)
+        * `7` - Слот 7 (15:20 - 16:05)
+        * `8` - Слот 8 (16:10 - 16:55)
+        * `9` - Слот 9 (17:05 - 17:50)
+        * `10` - Слот 10 (17:55 - 18:40)
+        * `11` - Слот 11 (18:55 - 19:40)
+        * `12` - Слот 12 (19:45 - 20:30)
+        * `13` - Слот 13 (20:45 - 21:30)
+        * `14` - Слот 14 (21:35 - 22:00)
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        date:
+          type: string
+          format: date
+        start_slot:
+          allOf:
+          - $ref: '#/components/schemas/StartSlotEnum'
+          minimum: -2147483648
+          maximum: 2147483647
+        end_slot:
+          allOf:
+          - $ref: '#/components/schemas/EndSlotEnum'
+          minimum: -2147483648
+          maximum: 2147483647
+        subject:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        description:
+          type: string
+          nullable: true
+        initiator:
+          type: integer
+        booking_attempt:
+          type: integer
+          nullable: true
+        group:
+          type: integer
+          nullable: true
+        room:
+          type: integer
+          nullable: true
+      required:
+      - created_at
+      - date
+      - end_slot
+      - id
+      - initiator
+      - start_slot
+      - subject
+      - updated_at
+    GroupContribution:
+      type: object
+      description: Сериализатор для вкладов в группу
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/GroupMember'
+          readOnly: true
+        amount:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        last_updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - last_updated_at
+      - user
+    GroupMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 256
+        first_name:
+          type: string
+          maxLength: 30
+        second_name:
+          type: string
+          maxLength: 30
+      required:
+      - email
+      - first_name
+      - id
+      - second_name
+    MemberAction:
+      type: object
+      description: Сериализатор для валидации user_id при добавлении/удалении участника
+      properties:
+        user_id:
+          type: integer
+      required:
+      - user_id
+    PaginatedBookingGroupList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookingGroup'
+    PaginatedEventList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event'
+    RoleEnum:
+      enum:
+      - student
+      - teacher
+      - employee
+      - admin
+      type: string
+      description: |-
+        * `student` - Student
+        * `teacher` - Teacher
+        * `employee` - Employee
+        * `admin` - Admin
+    RoomAvailability:
+      type: object
+      description: Сериализатор для данных о доступности аудитории в диапазоне.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        capacity:
+          type: integer
+          readOnly: true
+        room_type:
+          type: string
+          readOnly: true
+        building:
+          type: string
+          readOnly: true
+        floor:
+          type: string
+          readOnly: true
+        features:
+          readOnly: true
+        range_status:
+          type: string
+          readOnly: true
+          description: 'Статус аудитории в запрошенном диапазоне: ''AVAILABLE'', ''IN_AUCTION'',
+            ''BOOKED'', ''UNAVAILABLE_SLOT'', ''INACTIVE'''
+      required:
+      - building
+      - capacity
+      - features
+      - floor
+      - id
+      - name
+      - range_status
+      - room_type
+    StartSlotEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      type: integer
+      description: |-
+        * `1` - Слот 1 (09:00 - 09:45)
+        * `2` - Слот 2 (09:50 - 10:35)
+        * `3` - Слот 3 (10:50 - 11:35)
+        * `4` - Слот 4 (11:40 - 12:25)
+        * `5` - Слот 5 (13:30 - 14:15)
+        * `6` - Слот 6 (14:20 - 15:05)
+        * `7` - Слот 7 (15:20 - 16:05)
+        * `8` - Слот 8 (16:10 - 16:55)
+        * `9` - Слот 9 (17:05 - 17:50)
+        * `10` - Слот 10 (17:55 - 18:40)
+        * `11` - Слот 11 (18:55 - 19:40)
+        * `12` - Слот 12 (19:45 - 20:30)
+        * `13` - Слот 13 (20:45 - 21:30)
+        * `14` - Слот 14 (21:35 - 22:00)
+    StartSlotNumberEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      type: integer
+      description: |-
+        * `1` - Слот 1 (09:00 - 09:45)
+        * `2` - Слот 2 (09:50 - 10:35)
+        * `3` - Слот 3 (10:50 - 11:35)
+        * `4` - Слот 4 (11:40 - 12:25)
+        * `5` - Слот 5 (13:30 - 14:15)
+        * `6` - Слот 6 (14:20 - 15:05)
+        * `7` - Слот 7 (15:20 - 16:05)
+        * `8` - Слот 8 (16:10 - 16:55)
+        * `9` - Слот 9 (17:05 - 17:50)
+        * `10` - Слот 10 (17:55 - 18:40)
+        * `11` - Слот 11 (18:55 - 19:40)
+        * `12` - Слот 12 (19:45 - 20:30)
+        * `13` - Слот 13 (20:45 - 21:30)
+        * `14` - Слот 14 (21:35 - 22:00)
+    ThirdPartyAuth:
+      type: object
+      description: Сериализатор для приема логина и пароля от пользователя.
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    Token:
+      type: object
+      description: Сериализатор для передачи токена пользователю.
+      properties:
+        token:
+          type: string
+      required:
+      - token
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        email:
+          type: string
+          format: email
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 30
+        second_name:
+          type: string
+          maxLength: 30
+        booking_points:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        telegram_username:
+          type: string
+          maxLength: 50
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - email
+      - first_name
+      - second_name
+      - user_id
+  securitySchemes:
+    ThirdPartyAuthentication:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix ""
