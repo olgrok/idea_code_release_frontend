@@ -19,10 +19,9 @@ interface Room {
   building: string,
   floor: string,
   features: string,
-  is_available_for_range: boolean,
+  range_status: string,
   bid: number,
 }
-
 
 const TimeSlots = ref<TimeSlotsBtn[]>([
   { number: 0, time_slot: '9:00-9:45', is_active: false },
@@ -72,10 +71,12 @@ const AvailableRooms = ref<Room[]>([
     "building": "string",
     "floor": "string",
     "features": "string",
-    "is_available_for_range": true,
+    "range_status": "AVAILABLE",
     "bid": 0,
   }
 ])
+
+const selected_room = ref<Room>(AvailableRooms.value[0]);
 
 const selected_slots_number = computed(() => {
   if (first_selected.value && second_selected.value) {
@@ -86,6 +87,27 @@ const selected_slots_number = computed(() => {
   }
   return 1;
 });
+
+const time_period = computed(() => {
+  if (first_selected.value != null && second_selected.value != null) {
+    if (first_selected.value.number < second_selected.value.number) {
+      return first_selected.value.time_slot.split('-')[0] + " - " + second_selected.value?.time_slot.split('-')[1]
+    }
+    return second_selected.value.time_slot.split('-')[0] + " - " + first_selected.value?.time_slot.split('-')[1]
+  }
+  if (first_selected.value != null) {
+    return first_selected.value.time_slot;
+  }
+  if (second_selected.value != null) {
+    return second_selected.value.time_slot;
+  }
+  return "::"
+})
+
+function SelectRoom(room: Room) {
+  book_room_dialog.value = true;
+  selected_room.value = room;
+}
 
 function activateButtons(first_number: number, second_number: number, is_active: boolean): void {
   const start = Math.min(first_number, second_number);
@@ -220,7 +242,7 @@ async function BookingAttempt(room: Room, bid: number): Promise<void> {
     },
     timeout: api.timeout,
   }).then(() => {
-    room.is_available_for_range = false;
+    room.range_status = "IN_AUCTION";
   }).catch((error) => {
     error_dialog.value = true;
     if (error.status === 403) {
@@ -268,6 +290,39 @@ function Redirect() {
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="book_room_dialog" max-width="500">
+      <v-card>
+        <v-card-title class="text-h5 error--text">
+          <v-icon color="info" class="mr-2">mdi-information</v-icon>
+          Подвердите бронь
+        </v-card-title>
+
+        <v-card-text>
+          <p>Время: {{ time_period }}</p>
+          <p>Количество выбранных слотов: {{ selected_slots_number }}</p>
+          <p>Название: {{ selected_room.name }}</p>
+          <p>Вместимость: {{ selected_room.capacity }} </p>
+          <p>Тип: {{ selected_room.room_type }}</p>
+          <p>Здание: {{ selected_room.building }}</p>
+          <p>Этаж: {{ selected_room.floor }}</p>
+          <p>Описание: {{ selected_room.features }}</p>
+          <p>Стоимость: {{ Math.max(selected_room.bid, selected_slots_number) }}</p>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="success" variant="flat" @click="BookingAttempt(selected_room, selected_slots_number)">
+            Подвердить
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="flat" @click="book_room_dialog = false">
+            Закрыть
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-row class="filters-row mt-3">
       <v-col cols="12" md="6">
         <v-date-picker v-model="selected_date" label="Дата бронирования" :max-width="360" variant="outlined" />
@@ -296,10 +351,13 @@ function Redirect() {
     <v-row class="row_container" v-if="AvailableRooms.length > 0">
       <v-col cols="10" class="room_col">
         <v-card elevation="3" class="room_card ma-2 pa-2" v-for="room in AvailableRooms" :key="room.id">
-          <v-chip v-if="room.is_available_for_range" color="green" variant="flat">
+          <v-chip v-if="room.range_status === 'AVAILABLE'" color="green" variant="flat">
             Доступна для брони
           </v-chip>
-          <v-chip v-else color="red" variant="flat">
+          <v-chip v-if="room.range_status === 'IN_AUCTION'" color="warnibg" variant="flat">
+            На аукционе
+          </v-chip>
+          <v-chip v-if="room.range_status === 'BOOKED'" color="red" variant="flat">
             Недоступна для брони
           </v-chip>
           <v-card-title class="text-h4">{{ room.name }}</v-card-title>
@@ -309,30 +367,9 @@ function Redirect() {
           </v-card-text>
           <!-- BookingAttempt(room, room.bid) -->
           <!-- book_room_dialog = true -->
-          <v-btn @click="BookingAttempt(room, room.bid)" :disabled="room.is_available_for_range ? false : true"
-            color="primary">
+          <v-btn @click="SelectRoom(room)" :disabled="room.range_status === 'BOOKED'" color="primary">
             Забронировать
           </v-btn>
-
-          <v-dialog v-model="book_room_dialog" max-width="400">
-            <v-card>
-              <v-card-title class="text-h5 error--text">
-                <v-icon color="info" class="mr-2">mdi-information</v-icon>
-
-              </v-card-title>
-
-              <v-card-text>
-
-              </v-card-text>
-
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary" @click="book_room_dialog = false">
-                  Закрыть
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
         </v-card>
       </v-col>
     </v-row>
