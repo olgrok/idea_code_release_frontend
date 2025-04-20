@@ -49,6 +49,7 @@ const selected_floor = ref("Все аудитории");
 const error_dialog = ref(false)
 const error_msg = ref("Ошибка!")
 const book_room_dialog = ref(false);
+const is_loading = ref(false)
 
 const floorOptions = ['Цокольный этаж', '1 Этаж', '2 Этаж', '3 Этаж', '4 Этаж', '5 Этаж', 'Все аудитории'];
 
@@ -75,6 +76,25 @@ const selected_room = ref<Room>({
   "range_status": "AVAILABLE",
   "bid": 0,
 });
+
+const sort_items = ['Забронированно', 'Доступно для брони', 'На аукционе', 'Не применять сортировку']
+const select_sort = ref('Не применять сортировку');
+
+function MatchFilter(range_status: string) {
+  if (range_status === 'AVAILABLE' && select_sort.value === 'Доступно для брони') {
+    return true;
+  }
+  if (range_status === 'BOOKED' && select_sort.value === 'Забронированно') {
+    return true;
+  }
+  if (range_status === 'IN_AUCTION' && select_sort.value === 'На аукционе') {
+    return true;
+  }
+  if (select_sort.value === 'Не применять сортировку') {
+    return true;
+  }
+  return false;
+}
 
 const selected_slots_number = computed(() => {
   if (first_selected.value && second_selected.value) {
@@ -154,6 +174,7 @@ function selectSlot(slot: TimeSlotsBtn): void {
 }
 
 async function findAvailable_(start_slot: number, end_slot: number, date: string, floor: number): Promise<void> {
+  is_loading.value = true;
   try {
     const url = api.host + '/booking/find/';
     let response: AxiosResponse;
@@ -168,12 +189,16 @@ async function findAvailable_(start_slot: number, end_slot: number, date: string
       });
     }
 
+    is_loading.value = false;
     AvailableRooms.value = response.data.rooms;
     for (const room of AvailableRooms.value) {
       room.bid = 0;
     }
-  } catch (error) {
+  } catch (error: any) {
+    is_loading.value = false;
     console.error(error);
+    error_dialog.value = true;
+    error_msg.value = error.message
   }
 }
 
@@ -245,10 +270,10 @@ async function BookingAttempt(room: Room, bid: number): Promise<void> {
   }).catch((error) => {
     error_dialog.value = true;
     if (error.status === 403) {
-      error_msg.value = "Авторизируйтесть, чтобы забронировать аудиторию."
+      error_msg.value = "Авторизируйтесь, чтобы забронировать аудиторию."
     } else {
       console.log(error);
-      error_msg.value = error.statys + error.message;
+      error_msg.value = error.response.data;
     }
     console.log(error);
   });
@@ -279,8 +304,8 @@ function Redirect() {
           <v-btn color="primary" @click="error_dialog = false">
             Закрыть
           </v-btn>
-          <v-spacer v-if="error_msg === 'Авторизируйтесть, чтобы забронировать аудиторию.'"></v-spacer>
-          <v-btn v-if="error_msg === 'Авторизируйтесть, чтобы забронировать аудиторию.'" color="success"
+          <v-spacer v-if="error_msg === 'Авторизируйтесь, чтобы забронировать аудиторию.'"></v-spacer>
+          <v-btn v-if="error_msg === 'Авторизируйтесь, чтобы забронировать аудиторию.'" color="success"
             @click="Redirect">
             Авторизация
           </v-btn>
@@ -333,6 +358,10 @@ function Redirect() {
         <div>
           <v-select v-model="selected_floor" :items="floorOptions" label="Этаж" variant="outlined" />
         </div>
+        <div>
+          <v-select class="mt-2" style="max-width: 500px;" v-model="select_sort" :items="sort_items" label="Сортировка"
+            variant="outlined" />
+        </div>
         <div class="ma-3">
           <div class="text-h4 mb-3">Время:</div>
           <v-btn v-for="slot in TimeSlots" :key="slot.number" :color="slot.is_active ? 'success' : 'default'"
@@ -349,29 +378,32 @@ function Redirect() {
     </v-row>
 
 
-    <v-row class="row_container" v-if="AvailableRooms.length > 0">
-      <v-col cols="10" class="room_col">
-        <v-card elevation="3" class="room_card ma-2 pa-2" v-for="room in AvailableRooms" :key="room.id">
-          <v-chip v-if="room.range_status === 'AVAILABLE'" color="green" variant="flat">
-            Доступна для брони
-          </v-chip>
-          <v-chip v-if="room.range_status === 'IN_AUCTION'" color="warning" variant="flat">
-            На аукционе
-          </v-chip>
-          <v-chip v-if="room.range_status === 'BOOKED'" color="red" variant="flat">
-            Недоступна для брони
-          </v-chip>
-          <v-card-title class="text-h4">{{ room.name }}</v-card-title>
-          <v-card-text>
-            <p>Тип: {{ room.room_type }}</p>
-            <p>Этаж: {{ room.floor }}</p>
-          </v-card-text>
-          <!-- BookingAttempt(room, room.bid) -->
-          <!-- book_room_dialog = true -->
-          <v-btn @click="SelectRoom(room)" :disabled="room.range_status === 'BOOKED'" color="primary">
-            Забронировать
-          </v-btn>
-        </v-card>
+    <v-row class="row_container">
+      <v-progress-circular v-if="is_loading" indeterminate :size="45" :width="5"></v-progress-circular>
+
+      <v-col cols="10" class="room_col" v-if="AvailableRooms.length > 0">
+        <div v-for="room in AvailableRooms" :key="room.id">
+
+          <v-card elevation="3" class="room_card ma-2 pa-2" v-if="MatchFilter(room.range_status)">
+            <v-chip v-if="room.range_status === 'AVAILABLE'" color="green" variant="flat">
+              Доступна для брони
+            </v-chip>
+            <v-chip v-if="room.range_status === 'IN_AUCTION'" color="warning" variant="flat">
+              На аукционе
+            </v-chip>
+            <v-chip v-if="room.range_status === 'BOOKED'" color="red" variant="flat">
+              Недоступна для брони
+            </v-chip>
+            <v-card-title class="text-h4">{{ room.name }}</v-card-title>
+            <v-card-text>
+              <p>Тип: {{ room.room_type }}</p>
+              <p>Этаж: {{ room.floor }}</p>
+            </v-card-text>
+            <v-btn @click="SelectRoom(room)" :disabled="room.range_status !== 'AVAILABLE'" color="primary">
+              Забронировать
+            </v-btn>
+          </v-card>
+        </div>
       </v-col>
     </v-row>
   </v-container>
