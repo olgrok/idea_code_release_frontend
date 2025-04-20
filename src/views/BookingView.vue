@@ -248,7 +248,7 @@ async function BookingAttempt(room: Room, bid: number): Promise<void> {
       error_msg.value = "Авторизируйтесть, чтобы забронировать аудиторию."
     } else {
       console.log(error);
-      error_msg.value = error.status + error.message+error.response.data;
+      error_msg.value = error.status + error.message+JSON.stringify(error.response.data);
     }
     console.log(error);
   });
