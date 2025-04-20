@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, shallowRef } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import axios, { type AxiosResponse } from 'axios';
 import api from '../api_config.json';
+import * as parser from '../scripts/cookie_parser'
 import { useRouter } from 'vue-router'
 
 interface TimeSlotsBtn {
@@ -18,7 +19,8 @@ interface Room {
   building: string,
   floor: string,
   features: string,
-  is_available_for_range: boolean
+  is_available_for_range: boolean,
+  bid: number,
 }
 
 
@@ -48,7 +50,7 @@ const selected_floor = ref("Все аудитории");
 const error_dialog = ref(false)
 const error_msg = ref("Ошибка!")
 
-const floorOptions = ['Цокольный этаж', 'Все аудитории', '1 Этаж', '2 Этаж', '3 Этаж', '4 Этаж', '5 Этаж'];
+const floorOptions = ['Цокольный этаж', '1 Этаж', '2 Этаж', '3 Этаж', '4 Этаж', '5 Этаж', 'Все аудитории'];
 
 const floorMap: Record<string, number> = {
   'Цокольный этаж': 0,
@@ -69,11 +71,22 @@ const AvailableRooms = ref<Room[]>([
     "building": "string",
     "floor": "string",
     "features": "string",
-    "is_available_for_range": true
+    "is_available_for_range": true,
+    "bid": 0,
   }
 ])
 
-function activateButtons(first_number: number, second_number: number, is_active: boolean) {
+const selected_slots_number = computed(() => {
+  if (first_selected.value && second_selected.value) {
+    return Math.abs(first_selected.value.number - second_selected.value.number) + 1;
+  }
+  if (first_selected.value === null && second_selected.value === null) {
+    return 0;
+  }
+  return 1;
+});
+
+function activateButtons(first_number: number, second_number: number, is_active: boolean): void {
   const start = Math.min(first_number, second_number);
   const end = Math.max(first_number, second_number);
 
@@ -82,7 +95,15 @@ function activateButtons(first_number: number, second_number: number, is_active:
   }
 }
 
-function selectSlot(slot: TimeSlotsBtn) {
+function selectSlot(slot: TimeSlotsBtn): void {
+  if (first_selected.value && second_selected.value) {
+    activateButtons(first_selected.value.number, second_selected.value.number, false);
+    TimeSlots.value[first_selected.value.number].is_active = false;
+    first_selected.value = null;
+    TimeSlots.value[second_selected.value.number].is_active = false;
+    second_selected.value = null;
+  }
+
   if (first_selected.value === slot) {
     if (second_selected.value) {
       activateButtons(first_selected.value.number, second_selected.value.number, false);
@@ -111,7 +132,7 @@ function selectSlot(slot: TimeSlotsBtn) {
   }
 }
 
-async function findAvailable_(start_slot: number, end_slot: number, date: string, floor: number) {
+async function findAvailable_(start_slot: number, end_slot: number, date: string, floor: number): Promise<void> {
   try {
     const url = api.host + '/booking/find/';
     let response: AxiosResponse;
@@ -127,12 +148,15 @@ async function findAvailable_(start_slot: number, end_slot: number, date: string
     }
 
     AvailableRooms.value = response.data.rooms;
+    for (const room of AvailableRooms.value) {
+      room.bid = 0;
+    }
   } catch (error) {
     console.error(error);
   }
 }
 
-function findAvailable() {
+function findAvailable(): void {
   if (!first_selected.value && !second_selected.value) {
     console.error("No time slots selected");
     return;
@@ -156,22 +180,44 @@ function findAvailable() {
   );
 }
 
-async function BookingAttempt(room: Room) {
-  const url = api.host + '/booking/booking-attempt-create/';
-  const start = Math.min(first_selected.value, second_selected.value);
-  const end = Math.max(first_selected.value, second_selected.value);
+async function BookingAttempt(room: Room, bid: number): Promise<void> {
+  let start: number
+  let end: number
 
-  const request_body = {
-    room: room,
-    start_slot: start,
-    end_slot: end,
-    total_bid: 2147483647,
-    funding_group: 0,
-    booking_date: selected_date.value
+  if (first_selected.value && second_selected.value) {
+    start = Math.min(first_selected.value.number, second_selected.value.number) + 1;
+    end = Math.max(first_selected.value.number, second_selected.value.number) + 1;
+  } else if (first_selected.value) {
+    start = first_selected.value.number + 1;
+    end = first_selected.value.number + 1;
+  } else if (second_selected.value) {
+    start = second_selected.value.number + 1;
+    end = second_selected.value.number + 1;
+  } else {
+    error_dialog.value = true;
+    error_msg.value = "Выберите временной промежуток"
+    return;
   }
 
-  await axios.get(url, {
-    params: request_body
+  const url = api.host + '/booking/booking-attempt-create/';
+  const token = parser.GetCookie('msu_book_token')
+
+  const request_body = {
+    room: room.id,
+    start_slot_number: start,
+    end_slot_number: end,
+    total_bid: bid,
+    // funding_group: 1,
+    date: Intl.DateTimeFormat('en-CA').format(selected_date.value)
+  }
+
+  console.log(request_body)
+
+  await axios.post(url, request_body, {
+    headers: {
+      'Authorization': token
+    },
+    timeout: api.timeout,
   }).then(() => {
     room.is_available_for_range = false;
   }).catch((error) => {
@@ -179,7 +225,8 @@ async function BookingAttempt(room: Room) {
     if (error.status === 403) {
       error_msg.value = "Авторизируйтесть, чтобы забронировать аудиторию."
     } else {
-      error_msg.value = error.response.data.detail;
+      console.log(error);
+      error_msg.value = error.statys + error.message;
     }
     console.log(error);
   });
@@ -210,11 +257,12 @@ function Redirect() {
           <v-btn color="primary" @click="error_dialog = false">
             Закрыть
           </v-btn>
-          <v-spacer></v-spacer>
-          <v-btn color="success" @click="Redirect">
+          <v-spacer v-if="error_msg === 'Авторизируйтесть, чтобы забронировать аудиторию.'"></v-spacer>
+          <v-btn v-if="error_msg === 'Авторизируйтесть, чтобы забронировать аудиторию.'" color="success"
+            @click="Redirect">
             Авторизация
           </v-btn>
-          <v-spacer></v-spacer>
+          <v-spacer v-if="error_msg === 'Авторизируйтесть, чтобы забронировать аудиторию.'"></v-spacer>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -246,9 +294,12 @@ function Redirect() {
 
     <v-row class="row_container" v-if="AvailableRooms.length > 0">
       <v-col cols="10" class="room_col">
-        <v-card class="room_card ma-2 pa-2" v-for="room in AvailableRooms" :key="room.id">
-          <v-chip :color="room.is_available_for_range ? 'green' : 'red'" variant="flat">
+        <v-card elevation="3" class="room_card ma-2 pa-2" v-for="room in AvailableRooms" :key="room.id">
+          <v-chip v-if="room.is_available_for_range" color="green" variant="flat">
             Доступна для брони
+          </v-chip>
+          <v-chip v-else color="red" variant="flat">
+            Недоступна для брони
           </v-chip>
           <v-card-title>{{ room.name }}</v-card-title>
           <v-card-text>
@@ -257,7 +308,11 @@ function Redirect() {
             <p>Этаж: {{ room.floor }}</p>
             <p>Особенности: {{ room.features }}</p>
           </v-card-text>
-          <v-btn @click="BookingAttempt(room)" :disabled="room.is_available_for_range ? false : true" color="primary">
+          <div class="text-subtitle-1 mb-1">Использовать баллы:</div>
+          <v-number-input v-model="room.bid" :min="selected_slots_number" control-variant="stacked" variant="outlined"
+            size="small"></v-number-input>
+          <v-btn @click="BookingAttempt(room, room.bid)" :disabled="room.is_available_for_range ? false : true"
+            color="primary">
             Забронировать
           </v-btn>
         </v-card>
@@ -270,6 +325,9 @@ function Redirect() {
 .row_container {
   align-items: center;
   justify-content: center;
+  min-height: 200px;
+  max-height: 50dvh;
+  overflow-y: scroll;
 }
 
 .room_col {

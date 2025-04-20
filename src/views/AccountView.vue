@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useDisplay } from 'vuetify';
 import axios from 'axios';
 import api from '../api_config.json';
+import * as parser from '../scripts/cookie_parser'
 
 const { mobile } = useDisplay();
 
@@ -56,9 +57,16 @@ const cancelEdit = () => {
   editMode.value = false;
 };
 
-async function GetProfileInfo() {
+async function GetProfileInfo(): Promise<void> {
   const url = api.host + 'auth/profile/';
-  await axios.get(url, {}).then((response) => {
+  const token = parser.GetCookie('msu_book_token')
+
+  await axios.get(url, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    timeout: api.timeout,
+  },).then((response) => {
     user.value.name = response.data.first_name + response.data.second_name;
     user.value.email = response.data.email;
     user.value.user_id = response.data.user_id;

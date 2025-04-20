@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import { useRouter } from 'vue-router'
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import * as parser from './scripts/cookie_parser'
 
 const link = ref("booking")
 
@@ -23,6 +24,12 @@ function onLoginTrigger() {
   isRegistered.value = true;
   router.push('booking');
 }
+
+onMounted(() => {
+  if (parser.GetCookie('msu_book_token') != undefined) {
+    isRegistered.value = true;
+  }
+})
 
 </script>
 
@@ -51,10 +58,10 @@ function onLoginTrigger() {
     <footer>
       <v-layout class="overflow-visible" style="height: 56px;">
         <v-bottom-navigation v-model="link" class="bottom_nav_container">
-          <v-btn value="notifications">
+          <!-- <v-btn value="notifications">
             <v-icon icon="mdi-bell-outline" size="small"></v-icon>
             <span>Уведомления</span>
-          </v-btn>
+          </v-btn> -->
 
           <v-btn value="booking">
             <v-icon icon="mdi-timetable" size="small"></v-icon>
