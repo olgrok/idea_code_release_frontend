@@ -307,7 +307,9 @@ function Redirect() {
           <p>Здание: {{ selected_room.building }}</p>
           <p>Этаж: {{ selected_room.floor }}</p>
           <p>Описание: {{ selected_room.features }}</p>
-          <p>Стоимость: {{ Math.max(selected_room.bid, selected_slots_number) }}</p>
+          <p>Стоимость в баллах: {{ Math.max(selected_room.bid, selected_slots_number) }}</p>
+          <v-number-input v-model="selected_room.bid" :min="selected_slots_number"
+            control-variant="stacked"></v-number-input>
         </v-card-text>
 
         <v-card-actions>
