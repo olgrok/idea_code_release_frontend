@@ -62,21 +62,19 @@ const floorMap: Record<string, number> = {
   '5 Этаж': 5
 };
 
-const AvailableRooms = ref<Room[]>([
-  {
-    "id": 0,
-    "name": "string",
-    "capacity": 0,
-    "room_type": "string",
-    "building": "string",
-    "floor": "string",
-    "features": "string",
-    "range_status": "AVAILABLE",
-    "bid": 0,
-  }
-])
+const AvailableRooms = ref<Room[]>([])
 
-const selected_room = ref<Room>(AvailableRooms.value[0]);
+const selected_room = ref<Room>({
+  "id": 0,
+  "name": "string",
+  "capacity": 0,
+  "room_type": "string",
+  "building": "string",
+  "floor": "string",
+  "features": "string",
+  "range_status": "AVAILABLE",
+  "bid": 0,
+});
 
 const selected_slots_number = computed(() => {
   if (first_selected.value && second_selected.value) {
