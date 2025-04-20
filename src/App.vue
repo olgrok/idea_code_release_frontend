@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import { useRouter } from 'vue-router'
-import { ref, watch, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import * as parser from './scripts/cookie_parser'
 
 const link = ref("booking")
@@ -16,13 +16,19 @@ const page_title: Map<string, string> = new Map([
 const router = useRouter();
 const isRegistered = ref(false);
 
-watch(link, (new_link) => {
-  router.push(new_link);
-})
-
 function onLoginTrigger() {
   isRegistered.value = true;
   router.push('booking');
+}
+
+function Redirect(link_: string) {
+  link.value = link_;
+  router.push(link_);
+}
+
+function LogOut() {
+  isRegistered.value = false;
+  parser.SetCookie('msu_book_token', '')
 }
 
 onMounted(() => {
@@ -42,7 +48,10 @@ onMounted(() => {
         </v-app-bar-title>
 
         <template v-slot:append v-if="isRegistered">
-          <v-btn v-on:click="link = 'account'">
+          <v-btn v-on:click="LogOut">
+            <v-icon icon="mdi-logout" size=30></v-icon>
+          </v-btn>
+          <v-btn @click="Redirect('account')">
             <v-icon icon="mdi-account-circle" size=30></v-icon>
           </v-btn>
         </template>
@@ -63,12 +72,12 @@ onMounted(() => {
             <span>Уведомления</span>
           </v-btn> -->
 
-          <v-btn value="booking">
+          <v-btn @click="Redirect('booking')">
             <v-icon icon="mdi-timetable" size="small"></v-icon>
             <span>Бронирование аудитории</span>
           </v-btn>
 
-          <v-btn value="login" v-if="!isRegistered">
+          <v-btn @click="Redirect('login')" v-if="!isRegistered">
             <v-icon icon="mdi-account-circle" size="small"></v-icon>
             <span>Авторизация</span>
           </v-btn>

@@ -15,7 +15,7 @@ export function ParseCookie() {
   return CookieMap
 }
 
-export function AddCookie(key: string, value: string) {
+export function SetCookie(key: string, value: string) {
   document.cookie = key + '=' + value
 }
 

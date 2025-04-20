@@ -49,6 +49,7 @@ const selected_date = shallowRef(new Date());
 const selected_floor = ref("Все аудитории");
 const error_dialog = ref(false)
 const error_msg = ref("Ошибка!")
+const book_room_dialog = ref(false);
 
 const floorOptions = ['Цокольный этаж', '1 Этаж', '2 Этаж', '3 Этаж', '4 Этаж', '5 Этаж', 'Все аудитории'];
 
@@ -301,20 +302,37 @@ function Redirect() {
           <v-chip v-else color="red" variant="flat">
             Недоступна для брони
           </v-chip>
-          <v-card-title>{{ room.name }}</v-card-title>
+          <v-card-title class="text-h4">{{ room.name }}</v-card-title>
           <v-card-text>
-            <p>Вместимость: {{ room.capacity }}</p>
             <p>Тип: {{ room.room_type }}</p>
             <p>Этаж: {{ room.floor }}</p>
-            <p>Особенности: {{ room.features }}</p>
           </v-card-text>
-          <div class="text-subtitle-1 mb-1">Использовать баллы:</div>
-          <v-number-input v-model="room.bid" :min="selected_slots_number" control-variant="stacked" variant="outlined"
-            size="small"></v-number-input>
+          <!-- BookingAttempt(room, room.bid) -->
+          <!-- book_room_dialog = true -->
           <v-btn @click="BookingAttempt(room, room.bid)" :disabled="room.is_available_for_range ? false : true"
             color="primary">
             Забронировать
           </v-btn>
+
+          <v-dialog v-model="book_room_dialog" max-width="400">
+            <v-card>
+              <v-card-title class="text-h5 error--text">
+                <v-icon color="info" class="mr-2">mdi-information</v-icon>
+
+              </v-card-title>
+
+              <v-card-text>
+
+              </v-card-text>
+
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" @click="book_room_dialog = false">
+                  Закрыть
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-card>
       </v-col>
     </v-row>

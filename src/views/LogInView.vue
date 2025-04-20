@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import { useField, useForm } from 'vee-validate'
 import * as yup from 'yup'
 import api from '../api_config.json';
-import { AddCookie } from '../scripts/cookie_parser';
+import { SetCookie } from '../scripts/cookie_parser';
 
 const emit = defineEmits(['onLoginTrigger'])
 
@@ -33,7 +33,7 @@ const authenticate = handleSubmit((values) => {
     {
       timeout: api.timeout
     }).then((response) => {
-      AddCookie("msu_book_token", response.data.token);
+      SetCookie("msu_book_token", response.data.token);
       emit('onLoginTrigger');
     }).catch((error) => {
       const error_message = {
