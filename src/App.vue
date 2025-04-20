@@ -72,6 +72,11 @@ onMounted(() => {
             <span>Уведомления</span>
           </v-btn> -->
 
+          <v-btn href="https://app.profcomff.com/apps">
+            <v-icon icon="mdi-home-circle" size="small"></v-icon>
+            <span>Мой ФФ</span>
+          </v-btn>
+
           <v-btn @click="Redirect('booking')">
             <v-icon icon="mdi-timetable" size="small"></v-icon>
             <span>Бронирование аудитории</span>

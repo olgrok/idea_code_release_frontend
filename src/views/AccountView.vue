@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useDisplay } from 'vuetify';
-import axios from 'axios';
 import api from '../api_config.json';
-import * as parser from '../scripts/cookie_parser'
+import * as parser from '../scripts/cookie_parser';
+import axios from 'axios';
 
 const { mobile } = useDisplay();
 
@@ -11,13 +11,17 @@ const user = ref({
   name: 'Иван Иванов',
   email: 'ivan.ivanov@example.com',
   avatar: 'https://banner2.cleanpng.com/20180516/jq/kisspng-computer-icons-user-avatar-computer-software-5afc5548caec32.9866818415264863448312.jpg',
-  user_id: 11111111,
+  phone: '+7 (999) 123-45-67',
+  department: 'Факультет компьютерных наук',
+  position: 'Студент',
+  group: 'CS-101',
+  joinDate: '2022-09-01',
 });
 
 const settings = ref({
   notifications: true,
   darkMode: false,
-  emailNotifications: false,
+  emailNotifications: true,
 });
 
 const bookings = ref([
@@ -58,18 +62,19 @@ const cancelEdit = () => {
 };
 
 async function GetProfileInfo(): Promise<void> {
-  const url = api.host + 'auth/profile/';
+  const url = api.host + '/auth/profile/';
   const token = parser.GetCookie('msu_book_token')
 
   await axios.get(url, {
     headers: {
-      'Authorization': `Bearer ${token}`
+      'Authorization': token
     },
-    timeout: api.timeout,
-  },).then((response) => {
+    timeout: api.timeout
+  }).then((response) => {
     user.value.name = response.data.first_name + response.data.second_name;
     user.value.email = response.data.email;
     user.value.user_id = response.data.user_id;
+    console.log(response);
   }).catch((error) => {
     console.log(error);
   });
@@ -84,6 +89,7 @@ onMounted(async () => {
 <template>
   <v-container class="profile-container">
     <v-row>
+      <!-- Левая колонка - профиль -->
       <v-col cols="12" md="4" class="pr-md-4">
         <v-card elevation="2" class="profile-card">
           <v-card-text class="text-center">
@@ -97,10 +103,13 @@ onMounted(async () => {
                 <v-icon small>mdi-email</v-icon> {{ user.email }}
               </p>
               <p class="text-subtitle-1 text-medium-emphasis mb-1">
-                <v-icon small>mdi-identifier</v-icon> {{ user.user_id }}
+                <v-icon small>mdi-phone</v-icon> {{ user.phone }}
+              </p>
+              <p class="text-subtitle-1 text-medium-emphasis">
+                <v-icon small>mdi-account-tie</v-icon> {{ user.position }}
               </p>
 
-              <v-btn color="primary" variant="outlined" class="mt-4" @click="editMode = true" :disabled="true">
+              <v-btn color="primary" variant="outlined" class="mt-4" @click="editMode = true">
                 Редактировать профиль
               </v-btn>
             </template>
@@ -109,6 +118,10 @@ onMounted(async () => {
               <v-text-field v-model="tempUser.name" label="ФИО" class="mb-2"></v-text-field>
 
               <v-text-field v-model="tempUser.email" label="Email" type="email" class="mb-2"></v-text-field>
+
+              <v-text-field v-model="tempUser.phone" label="Телефон" class="mb-2"></v-text-field>
+
+              <v-text-field v-model="tempUser.position" label="Должность" class="mb-2"></v-text-field>
 
               <div class="d-flex justify-space-between mt-4">
                 <v-btn color="error" variant="outlined" @click="cancelEdit">
@@ -123,7 +136,8 @@ onMounted(async () => {
           </v-card-text>
         </v-card>
 
-        <v-card elevation="2" class="mt-4" :disabled="true">
+        <!-- Настройки -->
+        <v-card elevation="2" class="mt-4">
           <v-card-title class="text-h6">
             <v-icon class="mr-2">mdi-cog</v-icon>
             Настройки
@@ -141,7 +155,30 @@ onMounted(async () => {
         </v-card>
       </v-col>
 
+      <!-- Правая колонка - активность -->
       <v-col cols="12" md="8">
+        <!-- Информация о пользователе -->
+        <v-card elevation="2" class="mb-4">
+          <v-card-title class="text-h6">
+            <v-icon class="mr-2">mdi-information</v-icon>
+            Информация
+          </v-card-title>
+
+          <v-card-text>
+            <v-row>
+              <v-col cols="12" sm="6">
+                <p><strong>Факультет:</strong> {{ user.department }}</p>
+                <p><strong>Группа:</strong> {{ user.group }}</p>
+              </v-col>
+              <v-col cols="12" sm="6">
+                <p><strong>Дата регистрации:</strong> {{ new Date(user.joinDate).toLocaleDateString() }}</p>
+                <p><strong>Статус:</strong> Активен</p>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+
+        <!-- История бронирований -->
         <v-card elevation="2">
           <v-card-title class="text-h6">
             <v-icon class="mr-2">mdi-calendar-clock</v-icon>
