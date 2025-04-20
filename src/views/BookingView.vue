@@ -337,7 +337,7 @@ function Redirect() {
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="success" variant="flat" @click="BookingAttempt(selected_room, selected_slots_number)">
+          <v-btn color="success" variant="flat" @click="BookingAttempt(selected_room, selected_room.bid)">
             Подвердить
           </v-btn>
           <v-spacer></v-spacer>
@@ -399,7 +399,7 @@ function Redirect() {
               <p>Тип: {{ room.room_type }}</p>
               <p>Этаж: {{ room.floor }}</p>
             </v-card-text>
-            <v-btn @click="SelectRoom(room)" :disabled="room.range_status !== 'AVAILABLE'" color="primary">
+            <v-btn @click="SelectRoom(room)" :disabled="room.range_status === 'BOOKED'" color="primary">
               Забронировать
             </v-btn>
           </v-card>
